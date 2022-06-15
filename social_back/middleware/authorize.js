@@ -1,6 +1,8 @@
 var jwt = require('jsonwebtoken');
 const jwtSecret = process.env.JSON_SECRET
 
+
+//middleware function to check if the users jwt is valid or not
 const fetchUser=(req,res,next)=>{
     const authToken=req.header('auth-token')
     

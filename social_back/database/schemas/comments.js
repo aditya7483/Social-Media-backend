@@ -6,8 +6,16 @@ const commentsSchema = new mongoose.Schema({
       required:true
     },
     
+    //the actual comment
     comment:{
         type:String,
+        required:true
+    },
+
+    //the id of the post of which the comment is a part of 
+    post:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'post',
         required:true
     },
 

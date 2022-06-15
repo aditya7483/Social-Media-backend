@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 
 const postSchema = new mongoose.Schema({
+
+    //the object id of the user who made the post
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
@@ -12,7 +14,8 @@ const postSchema = new mongoose.Schema({
     },
 
     description: {
-        type: String
+        type: String,
+        default:''
     },
 
     date: {
@@ -20,14 +23,10 @@ const postSchema = new mongoose.Schema({
         default: Date.now
     },
 
+    //likes will by default has to be 0 initially.
     likes: {
         type: Number,
         default: 0
-    },
-
-    comments: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'comments'
     }
 })
 
