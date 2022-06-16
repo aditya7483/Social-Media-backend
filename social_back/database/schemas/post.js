@@ -30,4 +30,4 @@ const postSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('notes', postSchema);
+module.exports = mongoose.model('post', postSchema);
