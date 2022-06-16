@@ -12,7 +12,7 @@ const commentsSchema = new mongoose.Schema({
         required:true
     },
 
-    //the id of the post of which the comment is a part of 
+    //the id of the post of which the comment is a part of. comments will be fetched based on the post id
     post:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'post',

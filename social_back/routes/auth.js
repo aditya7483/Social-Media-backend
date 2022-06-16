@@ -8,7 +8,7 @@ var jwt = require('jsonwebtoken');
 const authorize = require('../middleware/authorize')
 const token = process.env.JSON_SECRET
 
-
+//endpoint to register a new user. username,password and email are given in the body of the request
 router.post('/signup', [
     body('username', 'Name is too short').isLength({ min: 3 }),
     body('email', 'Please enter a valid email').isEmail(),
@@ -35,7 +35,7 @@ router.post('/signup', [
 
 })
 
-
+//endpoint to register a new user. username and password are given in the body of the request
 router.post('/login', [
     body('username', 'Please enter a valid email').exists(),
     body('password', 'Password is too short').exists()
@@ -71,16 +71,51 @@ router.post('/login', [
     }
 })
 
-router.post('/getuser',authorize, async (req, res) => {
+
+//authorization required (auth-token needed as a parameter)
+//auth-token of the user whose data is to be fetched is given as the header
+router.post('/getuser', authorize, async (req, res) => {
     try {
         let userId = req.user.id
         const result = await User.findById(userId).select('-password')
-        res.json(result)
+        if (!result) {
+            res.status(404).send('user not found')
+        }
+        else res.json(result)
     } catch (err) {
         res.status(401).send('Internal Server Error')
     }
 })
 
+//authorization required (auth-token needed as a parameter)
+//auth-token of the user whose password is to be changed is given as the header
+//the new password is given in the body of request
+router.put('/forgotpassword', authorize, async(req, res) => {
+    try {
+        let userId = req.user.id
+        const result = await User.findById(userId)
+
+        //find if the user with the given auth-token exists
+        if (!result) {
+            res.status(404).send('user not found')
+        }
+        else {
+            const salt = await bcrypt.genSalt(10);
+            const newPassword = await bcrypt.hash(req.body.password, salt);
+            let data = {
+                password:newPassword
+            }
+            let response = await User.findByIdAndUpdate(userId, { $set: data }, { new: true })
+            if(!response){
+                res.status(404).send('user not found')
+            }
+            else res.send('Password Changed Successfully')
+        }
+    } catch (err) {
+        res.status(401).send('Internal Server Error')
+    }
+
+})
 
 
 module.exports = router;

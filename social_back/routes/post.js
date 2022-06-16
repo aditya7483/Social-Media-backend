@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../database/schemas/post');
-const Comment = require('../database/schemas/comments')
 const authorize = require('../middleware/authorize')
 
 //authorization required (auth-token needed as a parameter)
@@ -10,21 +9,16 @@ router.get('/getposts', authorize, async (req, res) => {
     try {
         let userId = req.user.id
         let data = await Post.find({ user: userId });
-        res.json(data);
+        if(data.length===0)
+        {
+            res.status(404).send('No posts found!!')
+        }
+        else res.json(data);
     } catch (error) {
         res.send("Internal Server Error")
     }
 })
 
-
-router.get('/getcomments/:id', authorize, async (req, res) => {
-    try {
-        let data = await Comment.find({post:req.params.id});
-        res.json(data);
-    } catch (error) {
-        res.send("Could not find the comment")
-    }
-})
 
 //authorization required (auth-token needed as a parameter)
 //endpoint to create a post. Takes picture link, user id and description as parameters. Likes and date will not be taken from the user, their default values will be used
@@ -40,7 +34,7 @@ router.post("/createpost", authorize, async (req, res) => {
         if (result === []) {
             res.send("An error Occured");
         }
-        res.json(result);
+        else res.json(result);
     } catch (err) {
         res.send("Internal Server Error")
     }
@@ -55,32 +49,10 @@ router.put('/updatepost/:id', authorize, async (req, res) => {
             description: req.body.description
         }
         let newPost = await Post.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
-        res.json(newPost);
-    } catch (error) {
-        res.status(404).send("Internal Server Error")
-    }
-})
-
-//authorization required (auth-token needed as a parameter)
-//endpoint to update or add new comments. takes id of the comment as the parameter along with comment and username in the body 
-router.put('/updatecomment/:id', authorize, async (req, res) => {
-    try {
-            let data = {
-            comment: req.body.comment,
-            username:req.body.username,
-            post:req.params.id
+        if(!newPost){
+            res.status(404).send('Post not found')
         }
-        let newcomment = await Comment.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
-        if(!newcomment){
-            try{
-                newcomment = await Comment.create(data);
-                res.json(newcomment);
-            }catch(err){
-                res.send("error in saving comment in the database")
-            }
-
-        }
-        else res.json(newcomment);
+        else res.json(newPost);
     } catch (error) {
         res.status(404).send("Internal Server Error")
     }
@@ -88,10 +60,13 @@ router.put('/updatecomment/:id', authorize, async (req, res) => {
 
 //authorization required (auth-token needed as a parameter)
 //endpoint to delete a post using id as the parameter.
-router.delete('/deletepost/:id', async (req, res) => {
+router.delete('/deletepost/:id', authorize,async (req, res) => {
     try {
-        let deletedPost = await Post.deleteOne({ _id: req.params.id });
-        res.json(deletedPost);
+        let deletedPost = await Post.findByIdAndDelete(req.params.id);
+        if(!deletedPost){
+            res.status(404).send('Post not found')
+        }
+        else res.json(deletedPost);
     } catch (error) {
         res.status(404).send("Internal Server Error")
     }

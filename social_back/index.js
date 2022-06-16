@@ -8,9 +8,10 @@ const connectToMongo = require('./database/mongoose');
 connectToMongo();
 
 app.use(express.json());
+
 app.use('/api/auth',require('./routes/auth'))
 app.use('/api/post',require('./routes/post'))
-
+app.use('/api/comment',require('./routes/comment'))
     
 
 
