@@ -106,6 +106,7 @@ router.put('/forgotpassword', authorize, async(req, res) => {
                 password:newPassword
             }
             let response = await User.findByIdAndUpdate(userId, { $set: data }, { new: true })
+            //check if the user exists
             if(!response){
                 res.status(404).send('user not found')
             }

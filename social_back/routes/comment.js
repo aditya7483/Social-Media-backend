@@ -9,7 +9,7 @@ const Comment = require('../database/schemas/comments')
 router.get('/getcomments/:id', async (req, res) => {
     try {
         let data = await Comment.find({ post: req.params.id });
-        if (data.length===0) {
+        if (data.length === 0) {
             res.status(404).send('could not find comments with the post id')
         }
         else res.json(data);
@@ -29,19 +29,23 @@ router.post('/createcomment/:id', authorize, async (req, res) => {
         if (!userInfo) {
             res.status(404).send('user not found')
         }
-        //find out if the post with the given id exists
-        let findPost = Post.findById(req.params.id)
-        if (!findPost) {
-            res.status(404).send('Post not found')
-        }
+
         else {
-            let data = {
-                comment: req.body.comment,
-                username: userInfo.username,
-                post: req.params.id
+
+            //find out if the post with the given id exists
+            let findPost = Post.findById(req.params.id)
+            if (!findPost) {
+                res.status(404).send('Post not found')
             }
-            newcomment = await Comment.create(data);
-            res.json(newcomment);
+            else {
+                let data = {
+                    comment: req.body.comment,
+                    username: userInfo.username,
+                    post: req.params.id
+                }
+                newcomment = await Comment.create(data);
+                res.json(newcomment);
+            }
         }
     }
     catch (err) {
@@ -67,16 +71,21 @@ router.put('/updatecomment/:id', authorize, async (req, res) => {
         else if (findComm.username != userInfo.username) {
             res.status(401).send('This action is not permitted')
         }
-        let data = {
-            comment: req.body.comment
-        }
 
-        let newcomment = await Comment.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
+        else {
 
-        if (!newcomment) {
-            res.status(404).send('comment not found')
+            let data = {
+                comment: req.body.comment,
+                date: Date.now()
+            }
+
+            let newcomment = await Comment.findByIdAndUpdate(req.params.id, { $set: data }, { new: true });
+
+            if (!newcomment) {
+                res.status(404).send('comment not found')
+            }
+            else res.json(newcomment);
         }
-        else res.json(newcomment);
     } catch (error) {
         res.status(404).send("Internal Server Error")
     }
