@@ -10,12 +10,15 @@ const fetchUser=(req,res,next)=>{
         res.status(401).send('Please authenticate using a valid token')
     }
     
-    try {
-        const data = jwt.verify(authToken,jwtSecret)
-        req.user = data.user
-        next()
-    } catch (err) {
-        res.status(401).send('Please authenticate Using a valid token')
+    else{
+
+        try {
+            const data = jwt.verify(authToken,jwtSecret)
+            req.user = data.user
+            next()
+        } catch (err) {
+            res.status(401).send('Please authenticate Using a valid token')
+        }
     }
 }
 
